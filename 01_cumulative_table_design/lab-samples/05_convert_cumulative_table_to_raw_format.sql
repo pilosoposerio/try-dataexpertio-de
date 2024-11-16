@@ -4,11 +4,10 @@
 -- only a subset of fields is used here to simplify
 -- the main goal is to show how to `UNNEST` the array of structs
 select
-	p.player_name
-	, s.*
+    s.*,
+    p.player_name
 from
-	players p
-	, unnest(p.season_stats) s
+    players as p,
+    unnest(p.season_stats) as s
 where
-	p.current_season = 2001;
-
+    p.current_season = 2001;
