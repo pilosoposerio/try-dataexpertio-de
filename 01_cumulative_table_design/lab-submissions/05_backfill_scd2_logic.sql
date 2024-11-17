@@ -1,21 +1,17 @@
-with raw_data as (
+-- dialect: postgresql
+
+with add_record_hash as (
     select
         actorid,
         actor,
         current_year,
         is_active,
-        quality_class
+        quality_class,
+        md5(is_active::text || '~' || quality_class::text) as record_hash
     from actors
 ),
 
-add_record_hash as (
-    select
-        r.*,
-        md5(r.is_active::text || '~' || r.quality_class::text) as record_hash
-    from raw_data as r
-),
-
-lead_lag as (
+streak_started as (
     select
         actorid,
         actor,
@@ -23,25 +19,61 @@ lead_lag as (
         is_active,
         quality_class,
         record_hash,
-        lag(record_hash) over (partition by actorid order by current_year) as prev_record_hash
+        coalesce(lag(record_hash)
+            over
+            (
+                partition by actorid
+                order by
+                    current_year
+            ), '~')
+        != record_hash
+        as did_change
     from
         add_record_hash
 ),
 
-scd as (
+streak_identified as (
+    select
+        actorid,
+        actor,
+        current_year,
+        is_active,
+        quality_class,
+        record_hash,
+        sum(case when did_change then 1 else 0 end)
+            over (
+                partition by actorid
+                order by
+                    current_year
+            )
+        as streak_identifier
+    from
+        streak_started
+),
+
+aggregated as (
     select
         actorid,
         actor,
         is_active,
         quality_class,
         record_hash,
-        make_date(current_year, 1, 1) as start_date,
-        make_date(lead(current_year) over (partition by actorid order by current_year), 1, 1) as end_date
-    from lead_lag
-    where record_hash != coalesce(prev_record_hash, '~')
+        streak_identifier,
+        min(current_year) as start_year,
+        max(current_year) as end_year
+    from
+        streak_identified
+    group by 1, 2, 3, 4, 5, 6
 )
 
-select * from scd
-order by
+select
     actorid,
-    start_date;
+    actor,
+    is_active,
+    quality_class,
+    record_hash,
+    start_year,
+    end_year
+from
+    aggregated
+order by actorid, start_date;
