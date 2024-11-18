@@ -83,4 +83,5 @@ with last_year as (
 
 select *
 from
-    cumulative_table;
+    cumulative_table
+order by actorid;

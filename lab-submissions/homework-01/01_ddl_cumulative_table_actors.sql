@@ -24,4 +24,5 @@ create table actors (
     , current_year int
     , quality_class quality_class
     , is_active boolean
+    , primary key (actorid, current_year)
 );

@@ -74,6 +74,7 @@ select
     , record_hash
     , start_year
     , end_year
+    , 2021 as current_year
 from
     aggregated
-order by actorid, start_date;
+order by actorid, start_year;

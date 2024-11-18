@@ -1,3 +1,4 @@
+-- dialect: postgresql
 -- latest dimension values
 -- i.e., answers the question: 
 -- "what are the latest dimensions for an actor"
@@ -131,4 +132,5 @@ new_records as (
 select
     *
     , 1970 as current_year
-from final_records;
+from final_records
+order by actorid, start_year;

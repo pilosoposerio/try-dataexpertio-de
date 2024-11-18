@@ -6,7 +6,7 @@ begin
 -- made a loop to programmatically 
 -- backfill all available seasons
 for i_year IN 1970..2021 loop
-insert into actors_scd
+insert into actors_history_scd
 with last_year_scd as (
     select * from actors_scd
     where current_year = (i_year-1)
@@ -143,7 +143,8 @@ select
     start_year,
     end_year,
     i_year as current_year
-from final_records;
+from final_records
+order by actorid, start_year;
 end loop;
 end;
 $$

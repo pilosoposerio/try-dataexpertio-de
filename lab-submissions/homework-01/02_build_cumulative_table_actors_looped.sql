@@ -91,7 +91,8 @@ cumulative_table as (
 
 select *
 from
-    cumulative_table;
+    cumulative_table
+order by actorid;
 end loop;
 end;
 $$
